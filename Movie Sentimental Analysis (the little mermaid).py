@@ -1,30 +1,14 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# # Project Overview
-
-# Within the field of film criticism and public feedback, the extensive collection of IMDb movie reviews represents a wealth of information that is ready for examination. The goal of my research was to create an automated system that could analyse these evaluations in real-time and uncover insights regarding audience sentiment on a large scale. The main goal was to classify the opinions stated in each review as either favourable or negative in order to provide a more complex picture of the responses from the public. This project made sure that this attempt was thoroughly documented for ease of comprehension and replication.
-
-# ![Screenshot](Screenshot.png)
-
 # In[1]:
-
-
-'''
 !pip install gensim --upgrade
 !pip install keras --upgrade
 !pip install pandas --upgrade
 !pip install spacy --upgrade
 !pip install textblob --upgrade
 !pip install tensorflow --upgrade
-'''
-
 
 # # Importing librarys using for this work
 
 # In[2]:
-
-
 # DataFrame
 import pandas as pd
 
@@ -94,9 +78,6 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 # ### 1. Code for extracting all of reviews from the IMDb homepage 
 
 # In[3]:
-
-
-'''
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
@@ -160,15 +141,13 @@ for review in review_containers:
 reviews_df = pd.DataFrame(reviews_data)
 print(reviews_df)
 driver.quit()
-'''
-
 
 # >Given the voluminous quantity of reviews, totaling 1,398 on the IMDb homepage, the endeavor to crawl all reviews is significantly time-consuming. Therefore, this project has opted to limit the scope of data extraction to a single page for the purposes of submission.
+
 
 # ### 2. Code for reading several reviews from the IMDb single homepage
 
 # In[4]:
-
 
 # Initialize an empty list to store review data
 reviews_data = []
@@ -216,11 +195,8 @@ driver.quit()
 
 
 # # Step2. Sentimental Analysis
-
 # ## 1) Using SentimentIntensityAnalyzer
-
 # In[5]:
-
 
 # Download the NLTK Vader lexicon (if not already downloaded)
 download('vader_lexicon')
@@ -256,7 +232,6 @@ reviews_df
 
 # In[6]:
 
-
 #importing the training data
 df = pd.read_csv('IMDB Dataset.csv')
 
@@ -266,10 +241,8 @@ df.head(10)
 
 # In[7]:
 
-
 #sentiment count
 df['sentiment'].value_counts()
-
 
 # # b) Data Preprocessing for crawling reviews
 # 1. Tokenize each review
@@ -279,21 +252,15 @@ df['sentiment'].value_counts()
 # 5. Convert slang words to their standard form
 
 # In[8]:
-
-
 nltk.download('punkt')
 nltk.download('wordnet')
 
 
 # In[9]:
-
-
 string.punctuation
 
 
 # In[10]:
-
-
 # Removing HTML tags from reviews
 # Necessary to clean the text data for better analysis by removing unnecessary HTML syntax.
 
@@ -305,8 +272,6 @@ df['review']= df['review'].apply(remove_br_tags)
 
 
 # In[11]:
-
-
 # Removing punctuation from the text
 # Punctuation can distort text analysis by treating words with punctuation as different from the same words without punctuation.
 
@@ -317,20 +282,14 @@ def nopunct(mess):
 
 
 # In[12]:
-
-
 df['review']= df['review'].apply(nopunct)
 
 
 # In[13]:
-
-
 df['review'][1]
 
 
 # In[14]:
-
-
 # Removing stopwords from the text
 # Stopwords are common words that usually don't carry much meaning and can be removed to focus on significant words.
 
@@ -341,8 +300,6 @@ def remove_stopword(mess):
 
 
 # In[15]:
-
-
 # Converting slang words to their standard form
 # Slang conversion can help in standardizing the text and improving the analysis by using common vocabulary.
 
@@ -367,8 +324,6 @@ def convert_slang(text):
 # 
 
 # In[16]:
-
-
 bow_transformer = CountVectorizer(analyzer='word').fit(df['review'])
 
 # Print total number of vocab words
@@ -376,22 +331,16 @@ print(len(bow_transformer.vocabulary_))
 
 
 # In[17]:
-
-
 reviews_bow = bow_transformer.transform(df['review'])
 
 
 # In[18]:
-
-
 mess1 = df['review'][1]
 bow1= bow_transformer.transform([mess1])
 #print(bow1.get_feature_names()[189202])
 
 
 # In[19]:
-
-
 sparsity = (100.0 * reviews_bow.nnz / (reviews_bow.shape[0] * reviews_bow.shape[1]))
 print('sparsity: {}'.format(round(sparsity)))
 
@@ -400,8 +349,6 @@ print('sparsity: {}'.format(round(sparsity)))
 # > TF-IDF, short for term frequency-inverse document frequency, is a numerical statistic intended to reflect how important a word is to a document in a collection or corpus.
 
 # In[31]:
-
-
 tfidf_transformer = TfidfTransformer().fit(reviews_bow)
 
 tfidf4 = tfidf_transformer.transform(bow1)
@@ -409,8 +356,6 @@ print(tfidf4)
 
 
 # In[21]:
-
-
 #To transform the entire bag-of-words corpus into TF-IDF corpus at once
 reviews_tfidf = tfidf_transformer.transform(reviews_bow)
 print(reviews_tfidf.shape)
@@ -419,15 +364,11 @@ print(reviews_tfidf.shape)
 # ## e) Training a Multinomial Naive Bayes model
 
 # In[22]:
-
-
 # Chosen for its suitability for classification with discrete features (e.g., word counts for text classification).
 model = MultinomialNB().fit(reviews_tfidf, df['sentiment'])
 
 
 # In[23]:
-
-
 # Splitting the dataset into training and testing sets
 
 msg_train, msg_test, label_train, label_test = \
@@ -437,8 +378,6 @@ print(len(msg_train), len(msg_test), len(msg_train) + len(msg_test))
 
 
 # In[24]:
-
-
 # Initialize the TF-IDF transformer
 vectorizer = TfidfVectorizer()
 
@@ -463,16 +402,12 @@ print(reviews_df[['review_text', 'predicted_sentiment']])
 
 
 # In[25]:
-
-
 reviews_df['predicted_sentiment'].value_counts()
 
 
 # # Step3. Visualisation of results with pie chart
 
 # In[26]:
-
-
 # Assuming reviews_df['predicted_sentiment'] is already defined
 # Calculate the percentage of each sentiment category
 sentiment_counts = reviews_df['predicted_sentiment'].value_counts()
@@ -489,8 +424,6 @@ plt.show()
 # ## Wordcloud
 
 # In[29]:
-
-
 # Assuming 'reviews_df['review_text']' contains your text data
 movie_names = reviews_df['review_text'].tolist()  # Convert the column to a list
 text = ' '.join(movie_names)  # Join all movie names into a single string
@@ -514,8 +447,6 @@ plt.show()
 # # Step4. Evaluation
 
 # In[27]:
-
-
 # Prediction for "The Little Mermaid" reviews
 prediction = model.predict(new_review_tfidf)
 
@@ -525,8 +456,6 @@ print("Test Accuracy: ", model.score(test_tfidf, label_test))
 
 
 # In[28]:
-
-
 # Assuming you have already calculated predictions for the test set as
 test_predictions = model.predict(test_tfidf)
 
