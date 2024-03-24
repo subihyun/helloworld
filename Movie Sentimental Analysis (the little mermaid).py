@@ -235,6 +235,8 @@ reviews_df
 #importing the training data
 df = pd.read_csv('IMDB Dataset.csv')
 
+## you can download this file here > https://www.kaggle.com/datasets/lakshmi25npathi/imdb-dataset-of-50k-movie-reviews/data
+
 print(df.shape)
 df.head(10)
 
